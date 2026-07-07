@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RCB Investimentos - Plataforma Oficial</title>
+    <!-- Biblioteca Chart.js para o Gráfico de Barras Empilhadas -->
+    <script src="https://jsdelivr.net"></script>
+    <style>
+        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; }
+        body { background-color: #f8fafc; color: #1e293b; line-height: 1.6; min-height: 100vh; display: flex; flex-direction: column; }
+
+        /* --- NAVEGAÇÃO / HEADER PREMIUM --- */
+        header { background: #ffffff; padding: 10px 5%; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 15px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 100; }
+        .logo-container { display: flex; align-items: center; cursor: pointer; }
+        .logo-img { height: 55px; width: auto; object-fit: contain; }
+        
+        .btn-header { background: #111111; color: white; padding: 10px 22px; border-radius: 6px; text-decoration: none; font-weight: bold; font-size: 14px; transition: 0.2s; cursor: pointer; border: 1px solid #111111; margin-left: 10px; }
+        .btn-header:hover { background: #333333; border-color: #333333; }
+        .btn-header-outline { background: transparent; color: #111111; border: 2px solid #111111; }
+        .btn-header-outline:hover { background: #111111; color: white; }
+
+        /* --- CONTROLE DE TELAS (ABAS) --- */
+        .tela { display: none; padding: 40px 5%; max-width: 1200px; margin: 0 auto; width: 100%; flex: 1; }
+        .tela.ativa { display: block; }
+
+        /* --- FORMATOS GERAIS DE ESTRUTURAS --- */
+        .box-formulario { background: #ffffff; border-radius: 12px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04); max-width: 500px; width: 100%; padding: 35px; border: 1px solid #e2e8f0; margin: 0 auto; text-align: center; }
+        .descricao { font-size: 14px; color: #64748b; text-align: center; margin-bottom: 25px; }
+        .grupo-campo { margin-bottom: 18px; text-align: left; }
+        .grupo-campo label { display: block; font-weight: 600; font-size: 13px; color: #475569; margin-bottom: 6px; }
+        .grupo-campo input, .grupo-campo select { width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px; outline: none; color: #1e293b; }
+        .grupo-campo input:focus { border-color: #111111; box-shadow: 0 0 0 3px rgba(17, 17, 17, 0.08); }
+        
+        .btn-acao { background-color: #111111; color: white; border: none; border-radius: 6px; padding: 14px; font-size: 15px; font-weight: bold; cursor: pointer; width: 100%; transition: background 0.2s; }
+        .btn-acao:hover { background-color: #333333; }
+        .link-alternativo { display: block; margin-top: 15px; font-size: 14px; color: #111111; cursor: pointer; text-decoration: underline; font-weight: 500; }
+
+        /* --- TELA 1: APRESENTAÇÃO --- */
+        .hero { display: grid; grid-template-columns: 1fr 1fr; gap: 50px; align-items: center; margin-bottom: 60px; padding: 20px 0; }
+        @media (max-width: 900px) { .hero { grid-template-columns: 1fr; text-align: center; } .hero-img-box { order: -1; } }
+        .hero-text h1 { font-size: 44px; line-height: 1.2; color: #0f172a; margin-bottom: 20px; font-weight: 800; }
+        .hero-text h1 span { color: #10b981; }
+        .hero-text p { font-size: 18px; color: #475569; margin-bottom: 25px; }
+        .regras-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 25px; margin-top: 20px; text-align: center; }
+        @media (max-width: 768px) { .regras-grid { grid-template-columns: 1fr; } }
+        .regra-item { padding: 30px 20px; background: white; border-radius: 12px; border: 1px solid #e2e8f0; box-shadow: 0 4px 15px rgba(0,0,0,0.01); }
+        .regra-item h4 { font-size: 18px; color: #1f2937; margin-bottom: 10px; font-weight: 700; }
+        .alerta-mercado { font-size: 12px; color: #94a3b8; margin-top: 8px; display: block; font-style: italic; }
+
+        /* --- TELA 3: ESCOLHA DE APORTE --- */
+        .valores-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 25px; }
+        .btn-valor { background: #f8fafc; border: 2px solid #e2e8f0; padding: 18px 10px; border-radius: 8px; font-weight: 700; font-size: 16px; color: #334155; cursor: pointer; transition: 0.15s; }
+        .btn-valor:hover { border-color: #cbd5e1; }
+        .btn-valor.active { background: #111111; color: white; border-color: #111111; }
+
+        /* --- TELA 4: CHECKOUT PIX --- */
+        .valor-checkout { font-size: 36px; font-weight: 800; color: #111111; margin: 15px 0; }
+        .qr-mock { width: 160px; height: 160px; background: #f1f5f9; border: 2px dashed #cbd5e1; margin: 0 auto 25px; display: flex; flex-direction: column; justify-content: center; align-items: center; border-radius: 8px; color: #475569; font-size: 14px; font-weight: 600; }
+        .cronometro { font-size: 14px; font-weight: 700; color: #dc2626; background: #fef2f2; border: 1px solid #fee2e2; padding: 10px; border-radius: 6px; margin-bottom: 20px; }
+
+        /* --- TELA 5: PAINEL DE RENDIMENTOS --- */
+        .dashboard-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 30px; }
+        @media (max-width: 600px) { .dashboard-grid { grid-template-columns: 1fr; } }
+        .card-painel { background: white; border: 1px solid #e2e8f0; border-radius: 10px; padding: 20px; text-align: left; box-shadow: 0 4px 12px rgba(0,0,0,0.01); }
+        .card-label { font-size: 11px; text-transform: uppercase; color: #64748b; font-weight: 700; margin-bottom: 6px; letter-spacing: 0.5px; }
+        .card-value { font-size: 22px; font-weight: 800; color: #0f172a; }
+        .card-value.highlight { color: #10b981; }
+        .chart-container { position: relative; margin-bottom: 30px; height: 340px; width: 100%; background: white; padding: 15px; border-radius: 12px; border: 1px solid #e2e8f0; }
+
+        /* --- PAINEL ADMINISTRATIVO MASTER --- */
+        .tabela-admin { width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; border: 1px solid #e2e8f0; margin-top: 15px; margin-bottom: 30px; font-size: 14px; text-align: left; }
+        .tabela-admin th { background: #111111; color: white; padding: 12px 15px; font-weight: 600; }
+        .tabela-admin td { padding: 12px 15px; border-bottom: 1px solid #e2e8f0; }
+        .btn-tabela { padding: 6px 12px; border-radius: 4px; border: none; font-size: 12px; font-weight: bold; cursor: pointer; color: white; margin-right: 5px; }
+        .btn-aprovar { background: #10b981; }
+        .btn-recusar { background: #ef4444; }
+
+        /* --- RODAPÉ SECRETO --- */
+        footer { background: #ffffff; text-align: center; padding: 15px; font-size: 12px; color: #94a3b8; border-top: 1px solid #e2e8f0; width: 100%; }
+        .link-admin-secreto { color: #e2e8f0; cursor: pointer; text-decoration: none; margin-left: 10px; }
+        .link-admin-secreto:hover { color: #cbd5e1; }
+    </style>
+</head>
+<body>
+
+    <!-- CABEÇALHO GLOBAL -->
+    <header>
+        <div class="logo-container" onclick="navegarPara('tela-home')">
+            <img src="logo.png" alt="RCB Investimentos" class="logo-img">
+        </div>
+        <div id="nav-direito">
+            <button class="btn-header btn-header-outline" id="btn-topo-login" onclick="navegarPara('tela-login')">Entrar</button>
+            <button class="btn-header" id="btn-topo-fluxo" onclick="navegarPara('tela-cadastro')">Começar Agora</button>
+        </div>
+    </header>
+
+    <!-- TELA 1: APRESENTAÇÃO COMERCIAL -->
+    <section id="tela-home" class="tela ativa">
+        <div class="hero">
+            <div class="hero-text">
+                <h1>Aloque seu Capital com Rendimentos de até <span>3% ao dia</span></h1>
+                <p>A inteligência financeira que impulsiona o seu patrimônio. Desenvolva sua carteira digital na RCB Investimentos, acompanhe a evolução dos lucros de forma limpa e realize saques imediatos com total autonomia.</p>
+                <button class="btn-acao" style="max-width: 260px; margin-top: 10px; font-size: 16px;" onclick="navegarPara('tela-cadastro')">Criar Minha Conta Grátis</button>
+            </div>
+            <div class="hero-img-box" style="text-align: center;">
+                <img src="logo.png" alt="RCB" style="max-width: 80%; height: auto; opacity: 0.85;">
+            </div>
+        </div>
+
+        <div class="regras-grid">
+            <div class="regra-item">
+                <div style="font-size: 30px; margin-bottom: 10px;">💰</div>
+                <h4>1. Realize o Aporte</h4>
+                <p style="font-size: 14px; color: #64748b; margin-top: 5px;">Selecione aportes institucionais planejados entre R$ 250 e R$ 2.000. O rendimento é ativado e inicia no dia útil seguinte.</p>
+            </div>
+            <div class="regra-item">
+                <div style="font-size: 30px; margin-bottom: 10px;">📈</div>
+                <h4>2. Rentabilidade Variável</h4>
+                <p style="font-size: 14px; color: #64748b; margin-top: 5px;">Seu capital performará sob uma taxa variável calculada diariamente, atingindo o teto de até 3% ao dia.</p>
+                <span class="alerta-mercado">por se tratar de mercado financeiro, grandes oscilações podem ocorrer.</span>
+            </div>
+            <div class="regra-item">
+                <div style="font-size: 30px; margin-bottom: 10px;">💸</div>
+                <h4>3. Saques Simplificados</h4>
+                <p style="font-size: 14px; color: #64748b; margin-top: 5px;">Gerencie seus dividendos com liquidez total. Você pode optar por sacar os lucros acumulados a partir do dia seguinte.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- TELA 2: LOGIN -->
+    <section id="tela-login" class="tela">
+        <div class="box-formulario">
+            <h2>Acessar Minha Conta</h2>
+            <p class="descricao">Insira suas credenciais para entrar no seu painel</p>
+            <form onsubmit="validarLogin(event)">
+                <div class="grupo-campo">
+                    <label>E-mail ou CPF</label>
+                    <input type="text" id="log-usuario" placeholder="usuario@exemplo.com" required>
+                </div>
+                <div class="grupo-campo">
+                    <label>Sua Senha</label>
+                    <input type="password" id="log-senha" placeholder="Digite sua senha" required>
+                </div>
+                <button type="submit" class="btn-acao">Entrar na Plataforma</button>
+                <span class="link-alternativo" onclick="navegarPara('tela-cadastro')">Não tem conta? Cadastre-se aqui</span>
+            </form>
+        </div>
+    </section>
+
+    <!-- TELA 3: CADASTRO -->
+    <section id="tela-cadastro" class="tela">
+        <div class="box-formulario">
+            <h2>Criar Minha Conta</h2>
+            <p class="descricao">Preencha seus dados obrigatórios de validação</p>
+            <form onsubmit="validarCadastro(event)">
+                <div class="grupo-campo"><label>Nome Completo</label><input type="text" id="cad-nome" placeholder="Ex: João Silva" required></div>
+                <div class="grupo-campo"><label>E-mail</label><input type="email" id="cad-email" placeholder="nome@exemplo.com" required></div>
+                <div class="grupo-campo"><label>CPF</label><input type="text" id="cad-cpf" placeholder="Apenas números" required></div>
+                <div class="grupo-campo"><label>Telefone Celular</label><input type="text" id="cad-celular" placeholder="DDD + Número" required></div>
+                <div class="grupo-campo"><label>Endereço Completo</label><input type="text" id="cad-end" placeholder="Rua, Número, Bairro, Cidade" required></div>
+                <div class="grupo-campo"><label>Criar Senha</label><input type="password" id="cad-senha" placeholder="Mínimo 6 caracteres" required></div>
+                <button type="submit" class="btn-acao">Salvar e Configurar Aporte</button>
+                <span class="link-alternativo" onclick="navegarPara('tela-login')">Já possui conta? Faça o Login</span>
+            </form>
+        </div>
+    </section>
+
+   <script>
+        // --- VARIÁVEIS DE CONTROLE FINANCEIRO ---
+        let valorSelecionado = 0; 
+        let capitalBanca = 0;     
+        let lucroAcumulado = 0;   
+        let diasRendidos = 0;     
+        let cronometroRendimento = null;
+
+        let labelsGrafico = ["Início"];
+        let dadosAportes = [];
+        let dadosLucros = [];
+        let meuGrafico = null;
+
+        // --- SISTEMA CENTRAL DE TRANSIÇÃO DE TELAS ---
+        function navegarPara(idTela) {
+            // Oculta todas as telas do sistema
+            document.querySelectorAll('.tela').forEach(t => t.style.display = 'none');
+            
+            // Exibe especificamente a tela alvo
+            const secaoAlvo = document.getElementById(idTela);
+            if(secaoAlvo) {
+                secaoAlvo.style.display = 'block';
+            }
+            window.scrollTo(0,0);
+
+            // Controla a exibição dos botões do topo (Entrar e Começar Agora)
+            const btnTopoFluxo = document.getElementById('btn-topo-fluxo');
+            const btnTopoLogin = document.getElementById('btn-topo-login');
+
+            if(idTela === 'tela-painel' || idTela === 'tela-saque') {
+                btnTopoLogin.style.display = "none";
+                btnTopoFluxo.innerText = "Sair / Desconectar";
+                btnTopoFluxo.style.backgroundColor = "#64748b";
+                btnTopoFluxo.onclick = function() { location.reload(); };
+            } else {
+                btnTopoLogin.style.display = "block";
+                btnTopoFluxo.innerText = "Começar Agora";
+                btnTopoFluxo.style.backgroundColor = "#16a34a";
+                btnTopoFluxo.onclick = function() { navegarPara('tela-cadastro'); };
+            }
+        }
+
+        // --- VALIDAÇÃO ENTRADA (LOGIN) ---
+        function validarLogin(e) {
+            e.preventDefault();
+            const usuario = document.getElementById('log-usuario').value.trim();
+            const senha = document.getElementById('log-senha').value;
+
+            if (usuario.length < 4 || senha.length < 6) {
+                alert("Dados de login inválidos!");
+                return;
+            }
+            // Login simula uma banca de R$ 1.000,00 automática para testes
+            valorSelecionado = 1000;
+            ativarBancaFinal(); 
+        }
+
+        // --- VALIDAÇÃO FILTRAGEM (CADASTRO) ---
+        function validarCadastro(e) {
+            e.preventDefault();
+            const nome = document.getElementById('cad-nome').value.trim();
+            const email = document.getElementById('cad-email').value.trim();
+            const senha = document.getElementById('cad-senha').value;
+
+            if(nome.length < 4 || !email.includes('@') || senha.length < 6) {
+                alert("Por favor, preencha seus dados corretamente!");
+                return;
+            }
+            navegarPara('tela-aporte');
+        }
+
+        // --- CONTROLE DE SELEÇÃO DE APORTE ---
+        function selecionarValorAporte(v, btn) {
+            valorSelecionado = v;
+            document.querySelectorAll('.btn-valor').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+        }
+        
+        function avancarParaPagamento() {
+            if(valorSelecionado === 0) { alert("Escolha o valor da sua cota antes de continuar!"); return; }
+            document.getElementById('pix-exibir-valor').innerText = valorSelecionado.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+            navegarPara('tela-pagamento');
+        }
+        
+        function copiarPix() { alert("Código Copia e Cola enviado para a sua área de transferência!"); }
+
+        // --- INICIALIZAÇÃO DO GRÁFICO (SINTAXE CORRIGIDA DO CHART.JS) ---
+        function inicializarGrafico() {
+            const ctx = document.getElementById('graficoBarrasRCB').getContext('2d');
+            labelsGrafico = ["Início"];
+            dadosAportes = [capitalBanca];
+            dadosLucros = [0.00];
+
+            if(meuGrafico) { meuGrafico.destroy(); } 
+
+            meuGrafico = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labelsGrafico,
+                    datasets: [
+                        { label: 'Aporte Alocado (R$)', data: dadosAportes, backgroundColor: '#0284c7' },
+                        { label: 'Lucro Disponível (R$)', data: dadosLucros, backgroundColor: '#16a34a' }
+                    ]
+                },
+                options: { responsive: true, maintainAspectRatio: false, scales: { x: { stacked: true }, y: { stacked: true, beginAtZero: true } } }
+            });
+        }
+
+        // --- CRONÔMETRO DIÁRIO DE DIRECIONAMENTO (1s = 1 DIA) ---
+        function ativarBancaFinal() {
+            capitalBanca = valorSelecionado;
+            inicializarGrafico();
+            navegarPara('tela-painel');
+
+            if(cronometroRendimento) clearInterval(cronometroRendimento);
+            cronometroRendimento = setInterval(() => {
+                diasRendidos++;
+                const ganhoDiario = capitalBanca * 0.03;
+                lucroAcumulado = ganhoDiario * diasRendidos;
+                const totalGeral = capitalBanca + lucroAcumulado;
+
+                document.getElementById('p-banca').innerText = capitalBanca.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+                document.getElementById('p-lucro').innerText = lucroAcumulado.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+                document.getElementById('p-total').innerText = totalGeral.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
+                labelsGrafico.push(`Dia ${diasRendidos}`);
+                dadosAportes.push(parseFloat(capitalBanca.toFixed(2)));
+                dadosLucros.push(parseFloat(lucroAcumulado.toFixed(2)));
+
+                if(labelsGrafico.length > 10) { labelsGrafico.shift(); dadosAportes.shift(); dadosLucros.shift(); }
+                meuGrafico.update();
+            }, 1000);
+        }
+
+        // --- REINVESTIR LUCROS (SINTAXE CORRIGIDA E ADAPTADA) ---
+        function realoqueManual() {
+            if(lucroAcumulado <= 0) { alert("Não existem rendimentos disponíveis neste ciclo."); return; }
+            capitalBanca = capitalBanca + lucroAcumulado;
+            lucroAcumulado = 0;
+            diasRendidos = 0;
+
+            labelsGrafico = ["Realoque"];
+            dadosAportes = [capitalBanca];
+            dadosLucros = [0.00];
+            
+            meuGrafico.data.labels = labelsGrafico;
+            // Atualiza os índices da lista interna do Chart.js corretamente para impedir falhas de tela
+            meuGrafico.data.datasets[0].data = dadosAportes;
+            meuGrafico.data.datasets[1].data = dadosLucros;
+            meuGrafico.update();
+
+            document.getElementById('p-banca').innerText = capitalBanca.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+            document.getElementById('p-lucro').innerText = lucroAcumulado.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+            document.getElementById('p-total').innerText = capitalBanca.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+            alert("Lucros integrados à banca principal com sucesso!");
+        }
+
+        // --- FORMULÁRIO DE RETIRADAS ---
+        function ajustarPlaceholderSaque() {
+            const t = document.getElementById('saque-tipo').value;
+            document.getElementById('saque-chave').placeholder = t === 'cpf' ? "000.000.000-00" : "(00) 00000-0000";
+            document.getElementById('saque-chave').value = "";
+        }
+        
+        function processarSaqueFinal() {
+            const valor = parseFloat(document.getElementById('saque-valor').value);
+            const chave = document.getElementById('saque-chave').value.trim();
+
+            if(isNaN(valor) || valor > lucroAcumulado || valor < 10 || chave.length < 5) {
+                alert("Ordem de saque recusada! Verifique o saldo disponível ou os dados de chave inseridos.");
+                return;
+            }
+
+            lucroAcumulado = lucroAcumulado - valor;
+            diasRendidos = 0; 
+            
+            alert(`Sucesso! Pedido de retirada de R$ ${valor.toFixed(2)} aceita.`);
+            navegarPara('tela-painel');
+        }
+
+        // Força a exibição da tela Home no momento em que a página abre
+        navegarPara('tela-home');
+    </script>
+</body>
+</html>
